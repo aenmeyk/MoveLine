@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!--This is the file that defines the IDs for all the commands exposed by VisualStudio. -->
+  <Extern href="stdidcmd.h"/>
+
+  <!--This header contains the command ids for the menus provided by the shell. -->
+  <Extern href="vsshlids.h"/>
+
+  <!--Definition of some VSCT specific constants. In this sample we use it for the IDs inside the guidOfficeIcon group. -->
+  <Extern href="msobtnid.h"/>
+
+  <KeyBindings>
+    <KeyBinding guid="guidMoveLineCmdSet"
+                id="cmdidMoveLineUp"
+                editor="guidVSStd97"
+                key1="VK_NUMPAD8"
+                mod1="Alt"/>
+    <KeyBinding guid="guidMoveLineCmdSet"
+                id="cmdidMoveLineDown"
+                editor="guidVSStd97"
+                key1="VK_NUMPAD2"
+                mod1="Alt"/>
+  </KeyBindings>
+
+  <Commands package="guidMoveLinePkg">
+    <Groups>
+      <Group guid="guidMoveLineCmdSet" id="MoveLineGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+      </Group>
+    </Groups>
+    
+    <Buttons>
+      <Button guid="guidMoveLineCmdSet" id="cmdidMoveLineUp" priority="0x0100" type="Button">
+        <CommandFlag>CommandWellOnly</CommandFlag>
+        <Parent guid="guidMoveLineCmdSet" id="MoveLineGroup" />
+        <Strings>
+          <ButtonText>MoveLineUp</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidMoveLineCmdSet" id="cmdidMoveLineDown" priority="0x0100" type="Button">
+        <CommandFlag>CommandWellOnly</CommandFlag>
+        <Parent guid="guidMoveLineCmdSet" id="MoveLineGroup" />
+        <Strings>
+          <ButtonText>MoveLineDown</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+
+  </Commands>
+
+  <Symbols>
+    <!-- This is the package guid. -->
+    <GuidSymbol name="guidMoveLinePkg" value="{593d8a1f-8719-4f45-888e-944177958a8e}" />
+    
+    <!-- This is the guid used to group the menu commands together -->
+    <GuidSymbol name="guidMoveLineCmdSet" value="{880fdee3-b114-46bd-8ab6-99aba4f718d0}">
+      <IDSymbol name="MoveLineGroup" value="0x1020" />
+      <IDSymbol name="cmdidMoveLineUp" value="0x0100" />
+      <IDSymbol name="cmdidMoveLineDown" value="0x0200" />
+    </GuidSymbol>
+  </Symbols>
+
+</CommandTable>
