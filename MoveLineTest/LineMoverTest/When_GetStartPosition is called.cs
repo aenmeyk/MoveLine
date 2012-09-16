@@ -12,10 +12,10 @@ namespace MoveLineTest.LineMoverTest
         public override void When()
         {
             var wpfTextView = this.WpfTextViewBuilder
-                .SetSelectedLineStart(5)
+                .SetSelectedLineStart(position: 5)
                 .BuildMock();
 
-            this.startPosition = this.LineMover.GetStartPosition(wpfTextView.Object);
+//            this.startPosition = this.LineMover.GetStartPosition(wpfTextView.Object);
         }
 
         [TestMethod]

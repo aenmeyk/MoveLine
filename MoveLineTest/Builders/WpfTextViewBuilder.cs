@@ -10,6 +10,7 @@ namespace MoveLineTest.Builders
         private const int TEXT_LENGTH = 100;
         private readonly Mock<IWpfTextView> wpfTextView = new Mock<IWpfTextView> { DefaultValue = DefaultValue.Mock };
         private readonly Mock<ITextSelection> textSelection;
+        public Mock<IWpfTextViewLine> EndLine { get; private set; }
         public SnapshotPoint SelectedLineStartPosition { get; private set; }
         public SnapshotPoint SelectedLineEndPosition { get; private set; }
 
@@ -39,14 +40,14 @@ namespace MoveLineTest.Builders
         public WpfTextViewBuilder SetSelectedLineEnd(int position)
         {
             this.SelectedLineEndPosition = new SnapshotPoint(this.wpfTextView.Object.TextSnapshot, position);
-            var endLine = new Mock<IWpfTextViewLine>();
-            endLine.SetupGet(x => x.EndIncludingLineBreak).Returns(this.SelectedLineEndPosition);
+            this.EndLine = new Mock<IWpfTextViewLine>();
+            this.EndLine.SetupGet(x => x.EndIncludingLineBreak).Returns(this.SelectedLineEndPosition);
 
             var selectionEndPoint = new SnapshotPoint(wpfTextView.Object.TextSnapshot, 0);
             this.textSelection.SetupGet(x => x.End).Returns(new VirtualSnapshotPoint(selectionEndPoint));
 
             var bufferPosition = this.wpfTextView.Object.Selection.End.Position;
-            this.wpfTextView.Setup(x => x.GetTextViewLineContainingBufferPosition(bufferPosition)).Returns(endLine.Object);
+            this.wpfTextView.Setup(x => x.GetTextViewLineContainingBufferPosition(bufferPosition)).Returns(this.EndLine.Object);
 
             return this;
         }
