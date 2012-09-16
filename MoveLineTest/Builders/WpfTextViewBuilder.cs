@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.Text.Editor;
 using Moq;
 using Microsoft.VisualStudio.Text.Formatting;
+using MoveLineTest.SampleData;
 
 namespace MoveLineTest.Builders
 {
@@ -18,6 +19,7 @@ namespace MoveLineTest.Builders
         {
             var textSnapshot = new Mock<ITextSnapshot> { DefaultValue = DefaultValue.Mock };
             textSnapshot.SetupGet(x => x.Length).Returns(TEXT_LENGTH);
+            textSnapshot.SetupGet(x => x.GetText()).Returns(TextData.Text);
             this.wpfTextView.SetupGet(x => x.TextSnapshot).Returns(textSnapshot.Object);
             this.textSelection = Mock.Get(this.wpfTextView.Object.Selection);
         }

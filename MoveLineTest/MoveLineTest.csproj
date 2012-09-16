@@ -59,9 +59,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builders\WpfTextViewBuilder.cs" />
+    <Compile Include="LineMoverTest\When_MoveLineUp_is_called.cs" />
     <Compile Include="LineMoverTest\When_GetEndPosition is called.cs" />
     <Compile Include="LineMoverTest\Given_a_new_LineMover.cs" />
     <Compile Include="LineMoverTest\When_GetStartPosition is called.cs" />
+    <Compile Include="SampleData\TextData.cs" />
     <Compile Include="Tools\Gwt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\TestExceptionList.cs" />
