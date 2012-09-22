@@ -60,7 +60,7 @@ namespace KevinAenmey.MoveLinePackage
         {
             if (this.IsActiveDocumentText(sender))
             {
-                this.lineMover.MoveLineDown(this.GetActiveTextView());
+//                this.lineMover.MoveLineDown(this.GetActiveTextView());
             }
         }
 

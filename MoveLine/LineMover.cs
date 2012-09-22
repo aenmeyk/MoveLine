@@ -2,6 +2,7 @@ using System;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Formatting;
+using System.Linq;
 
 namespace KevinAenmey.MoveLine
 {
@@ -11,26 +12,43 @@ namespace KevinAenmey.MoveLine
         {
             try
             {
-                var endLine = GetEndPosition(view);
-                var startPosition = GetStartPosition(view);
 
-                var insertPosition = !view.Selection.IsEmpty && endLine.Start.Position == view.Selection.End.Position
-                    ? endLine.Start.Position
-                    : endLine.EndIncludingLineBreak.Position;
+                /* GET SWAP LINE
+                 * ------------------------------
+                 * get start of line to swap
+                 * get end of line to swap
+                 * get ITextSnapshotLine of text to swap:
+                 *  - if moving up: include end linebreak.
+                 *  - if moving down: include start linebreak.
+                 *  
+                 * GET INSERT POSITION
+                 * -----------------------------------
+                 *  - if moving up: start of text to move
+                 *  - if moving down: end of text to move
+                 *  
+                 * GET SELECTION
+                 * -------------------------------
+                 * Get current selection start
+                 * Get current selection end
+                 * After move (reset selection): 
+                 *  - if moving up: new selection start = old - len of swap text
+                 *  - if moving down: new selection start = old + len of swap text
+                 *  
+                 * PERFORM MOVE
+                 * ----------------------------------
+                 * Delete ITextSnapshotLine
+                 * Insert text snapshot at insert position
+                 * Reset selection
+                */
 
-                var selectionStartLinePosition = view.TextSnapshot.GetLineNumberFromPosition(startPosition.Position);
-                if (selectionStartLinePosition == 0) return false;
-                var lineAbove = view.TextSnapshot.GetLineFromLineNumber(selectionStartLinePosition - 1);
+                var selectionHelper = new SelectionHelper(view);
+                selectionHelper.TakeSelectionSnapshot();
 
-                if (insertPosition == view.TextSnapshot.Length)
-                {
-                    SwapLines(view, insertPosition, lineAbove);
-                }
-                else
-                {
-                    SwapLinesUp(view, insertPosition, lineAbove);
-                }
+                var lineToSwap = this.GetLineToSwap(view, selectionHelper);
+                var insertPosition = selectionHelper.GetLineEndIncludingLineBreak();
+                this.PerformMove(view, lineToSwap, insertPosition);
 
+                selectionHelper.ApplySelection(-lineToSwap.LengthIncludingLineBreak);
                 view.Caret.EnsureVisible();
             }
             catch(Exception e)
@@ -41,168 +59,80 @@ namespace KevinAenmey.MoveLine
             return true;
         }
 
-        public bool MoveLineDown(IWpfTextView view)
+        public ITextSnapshotLine GetLineToSwap(IWpfTextView view, SelectionHelper selectionHelper)
         {
-            try
-            {
-                var insertPosition = GetStartPosition(view);
-                var endLine = GetEndPosition(view);
+            var startPosition = selectionHelper.GetLineStart();
+            var startLineNumber = view.TextSnapshot.GetLineNumberFromPosition(startPosition.Position);
 
-                var endPosition = view.Selection.IsEmpty || view.Selection.End.Position != endLine.Start
-                    ? endLine.EndIncludingLineBreak.Position
-                    : endLine.End.Position;
-
-                var selectionEndLinePosition = view.TextSnapshot.GetLineNumberFromPosition(endPosition);
-
-                if (selectionEndLinePosition + 1 == view.TextSnapshot.LineCount) return false;
-
-                var lineBelow = view.TextSnapshot.GetLineFromLineNumber(selectionEndLinePosition);
-                SwapLines(view, insertPosition, lineBelow);
-                view.Caret.EnsureVisible();
-            }
-            catch(Exception e)
-            {
-                return false;
-            }
-            return true;
+            return view.TextSnapshot.GetLineFromLineNumber(startLineNumber - 1);
         }
 
-        private static SnapshotPoint GetStartPosition(IWpfTextView view)
+        private void PerformMove(IWpfTextView view, ITextSnapshotLine lineToSwap, int insertPosition)
+        {
+            var insertedText = lineToSwap.GetTextIncludingLineBreak();
+
+            if(insertPosition == view.TextSnapshot.Length)
+            {
+                // We don't want ot move the line break if the insert position is the last character of the 
+                // document but also the first character of the line (i.e. an empty line at the end of the document)
+                var lineUnderInsertPosition = view.TextSnapshot.GetLineFromPosition(insertPosition);
+                if (lineUnderInsertPosition.Length > 0)
+                {
+                    // Move the line break to the start of the text to insert
+                    insertedText = (Environment.NewLine + insertedText).Substring(0, insertedText.Length);
+                }
+            }
+
+            using (var edit = view.TextBuffer.CreateEdit())
+            {
+                edit.Delete(lineToSwap.Start, lineToSwap.LengthIncludingLineBreak);
+                edit.Insert(insertPosition, insertedText);
+                edit.Apply();
+            }
+        }
+
+    }
+
+    public class SelectionHelper
+    {
+        private readonly IWpfTextView view;
+        private SnapshotSpan selection;
+
+        public SelectionHelper(IWpfTextView view)
+        {
+            this.view = view;
+        }
+
+        public void TakeSelectionSnapshot()
+        {
+            this.selection = this.view.Selection.SelectedSpans.FirstOrDefault();
+        }
+
+        public void ApplySelection(int offset)
+        {
+            if (selection.Length > 0)
+            {
+                var updatedSelectionSnapshot = new SnapshotSpan(view.TextSnapshot, selection.Start + offset, selection.Length);
+                view.Selection.Select(updatedSelectionSnapshot, false);
+                view.Caret.MoveTo(new SnapshotPoint(view.TextSnapshot, updatedSelectionSnapshot.End));
+            }
+        }
+
+        public SnapshotPoint GetLineStart()
         {
             var startPosition = view.Selection.Start.Position;
             var startLine = view.GetTextViewLineContainingBufferPosition(startPosition);
             return startLine.Start;
         }
 
-        private static IWpfTextViewLine GetEndPosition(IWpfTextView view)
+        public SnapshotPoint GetLineEndIncludingLineBreak()
         {
             var endPosition = view.Selection.End.Position;
             var endLine = view.GetTextViewLineContainingBufferPosition(endPosition);
-            return endLine;
-        }
 
-        private static void SwapLines(ITextView view, int insertPosition, ITextSnapshotLine textSnapshotLine)
-        {
-            using (var edit = view.TextBuffer.CreateEdit())
-            {
-                edit.Delete(textSnapshotLine.Start, textSnapshotLine.LengthIncludingLineBreak);
-                edit.Insert(insertPosition, textSnapshotLine.GetText() + Environment.NewLine);
-                edit.Apply();
-            }
-        }
-
-        private static void SwapLinesUp(ITextView view, int insertPosition, ITextSnapshotLine textSnapshotLine)
-        {
-            var nextChar = view.TextSnapshot.GetText(insertPosition, 1);
-            var insertText = textSnapshotLine.GetText() + Environment.NewLine;
-
-            SwapLines(view, insertPosition + 1, textSnapshotLine);
-
-            using (var edit = view.TextBuffer.CreateEdit())
-            {
-                edit.Delete(insertPosition - insertText.Length, 1);
-                edit.Insert(insertPosition + 1, nextChar);
-                edit.Apply();
-            }
+            return view.Selection.IsEmpty || view.Selection.End.Position != endLine.Start
+                ? endLine.EndIncludingLineBreak
+                : new SnapshotPoint(view.TextSnapshot, endLine.Start);
         }
     }
 }
-
-
-
-//
-//using System;
-//using Microsoft.VisualStudio.Text;
-//using Microsoft.VisualStudio.Text.Editor;
-//using Microsoft.VisualStudio.Text.Formatting;
-//using Microsoft.VisualStudio.Text.Operations;
-//
-//namespace KevinAenmey.MoveLine
-//{
-//    public class LineMover
-//    {
-//        public bool MoveLineUp(IWpfTextView view)
-//        {
-//            var endLine = GetEndPosition(view);
-//            var startPosition = GetStartPosition(view);
-//
-//            var insertPosition = endLine.Start.Position == startPosition.Position
-//                ? endLine.EndIncludingLineBreak.Position
-//                : endLine.Start.Position;
-//
-//            var selectionStartLinePosition = view.TextSnapshot.GetLineNumberFromPosition(startPosition.Position);
-//            if (selectionStartLinePosition == 0) return false;
-//            var lineAbove = view.TextSnapshot.GetLineFromLineNumber(selectionStartLinePosition - 1);
-//
-//            SwapLinesUp(view, insertPosition, lineAbove);
-//
-//            return true;
-//        }
-//
-//        public bool MoveLineDown(IWpfTextView view)
-//        {
-//            var insertPosition = GetStartPosition(view);
-//            var endLine = GetEndPosition(view);
-//
-//            var endPosition = view.Selection.IsEmpty || view.Selection.End.Position != endLine.Start
-//                ? endLine.EndIncludingLineBreak.Position
-//                : endLine.End.Position;
-//
-//            var selectionEndLinePosition = view.TextSnapshot.GetLineNumberFromPosition(endPosition);
-//
-//            if (selectionEndLinePosition + 1 == view.TextSnapshot.LineCount) return false;
-//
-//            var lineBelow = view.TextSnapshot.GetLineFromLineNumber(selectionEndLinePosition);
-//            SwapLines(view, insertPosition, lineBelow);
-//            return true;
-//        }
-//
-//        private static SnapshotPoint GetStartPosition(IWpfTextView view)
-//        {
-//            var startPosition = view.Selection.Start.Position;
-//            var startLine = view.GetTextViewLineContainingBufferPosition(startPosition);
-//            return startLine.Start;
-//        }
-//
-//        private static IWpfTextViewLine GetEndPosition(IWpfTextView view)
-//        {
-//            var endPosition = view.Selection.End.Position;
-//            var endLine = view.GetTextViewLineContainingBufferPosition(endPosition);
-//            return endLine;
-//        }
-//
-//        private static void SwapLines(ITextView view, int insertPosition, ITextSnapshotLine textSnapshotLine)
-//        {
-//            var edit = view.TextBuffer.CreateEdit();
-//            edit.Delete(textSnapshotLine.Start, textSnapshotLine.LengthIncludingLineBreak);
-//            edit.Insert(insertPosition, textSnapshotLine.GetText() + Environment.NewLine);
-//            edit.Apply();
-//
-//            view.Caret.EnsureVisible();
-//        }
-//
-//        private static void SwapLinesUp(ITextView view, int insertPosition, ITextSnapshotLine textSnapshotLine)
-//        {
-//            if (insertPosition == view.TextSnapshot.Length)
-//            {
-//                SwapLines(view, insertPosition, textSnapshotLine);
-//                return;
-//            }
-//
-//            var nextChar = view.TextSnapshot.GetText(insertPosition, 1);
-//            var insertText = textSnapshotLine.GetText() + Environment.NewLine;
-//
-//            var edit = view.TextBuffer.CreateEdit();
-//            edit.Delete(textSnapshotLine.Start, textSnapshotLine.LengthIncludingLineBreak);
-//            edit.Insert(insertPosition + 1, insertText);
-//            edit.Apply();
-//
-//            edit = view.TextBuffer.CreateEdit();
-//            edit.Delete(insertPosition - insertText.Length, 1);
-//            edit.Insert(insertPosition + 1, nextChar);
-//            edit.Apply();
-//
-//            view.Caret.EnsureVisible();
-//        }
-//    }
-//}
