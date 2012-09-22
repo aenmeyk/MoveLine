@@ -16,11 +16,11 @@ namespace MoveLineTest.LineMoverTest
             this.WpfTextViewBuilder = new WpfTextViewBuilder();
             this.TextSnapshot = new Mock<ITextSnapshot>();
             this.TextSnapshot.SetupGet(x => x.Length).Returns(10);
-            this.LineMover = new LineMover();
+            this.LineMover = new LineMoverUp();
         }
 
         protected WpfTextViewBuilder WpfTextViewBuilder { get; private set; }
-        protected LineMover LineMover { get; private set; }
+        protected LineMoverUp LineMover { get; private set; }
         protected Mock<ITextSnapshot> TextSnapshot { get; private set; }
     }
 }

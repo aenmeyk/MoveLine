@@ -15,7 +15,7 @@ namespace MoveLineTest.LineMoverTest
             this.view = this.WpfTextViewBuilder
                 .BuildMock();
 
-            this.LineMover.MoveLineUp(this.view.Object);
+//            this.LineMover.MoveLine(this.view.Object);
         }
 
         [TestMethod]

@@ -117,8 +117,11 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ILineMover.cs" />
+    <Compile Include="LineMoveDirector.cs" />
+    <Compile Include="LineMoverDown.cs" />
     <Compile Include="Guids.cs" />
-    <Compile Include="LineMover.cs" />
+    <Compile Include="LineMoverUp.cs" />
     <Compile Include="MoveLine.cs" />
     <Compile Include="MoveLinePackage.cs" />
     <Compile Include="Resources.Designer.cs">
@@ -129,6 +132,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PkgCmdID.cs" />
+    <Compile Include="SelectionHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

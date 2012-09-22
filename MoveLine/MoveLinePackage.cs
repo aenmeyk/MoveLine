@@ -22,7 +22,8 @@ namespace KevinAenmey.MoveLinePackage
     [ContentType("text")]
     public sealed class MoveLinePackage : Package
     {
-        private LineMover lineMover;
+        private readonly Lazy<LineMoveDirector> lazyLineMoveUp = new Lazy<LineMoveDirector>(() => new LineMoveDirector(new LineMoverUp()));
+        private readonly Lazy<LineMoveDirector> lazyLineMoveDown = new Lazy<LineMoveDirector>(() => new LineMoveDirector(new LineMoverDown()));
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -36,7 +37,6 @@ namespace KevinAenmey.MoveLinePackage
             OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (null != mcs)
             {
-                this.lineMover = new LineMover();
                 CommandID upCommandID = new CommandID(GuidList.guidMoveLineCmdSet, (int)PkgCmdIDList.cmdidMoveLineUp);
                 MenuCommand upCommand = new MenuCommand(MoveLineUpCallback, upCommandID);
                 mcs.AddCommand(upCommand);
@@ -51,8 +51,7 @@ namespace KevinAenmey.MoveLinePackage
         {
             if (this.IsActiveDocumentText(sender))
             {
-                var activeTextView = this.GetActiveTextView();
-                this.lineMover.MoveLineUp(activeTextView);
+                this.lazyLineMoveUp.Value.MoveLine(this.GetActiveTextView());
             }
         }
 
@@ -60,7 +59,7 @@ namespace KevinAenmey.MoveLinePackage
         {
             if (this.IsActiveDocumentText(sender))
             {
-//                this.lineMover.MoveLineDown(this.GetActiveTextView());
+                this.lazyLineMoveDown.Value.MoveLine(this.GetActiveTextView());
             }
         }
 
