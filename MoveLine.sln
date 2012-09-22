@@ -10,8 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoveLineTest", "MoveLineTest\MoveLineTest.csproj", "{C5F554A4-7615-48AB-A73D-48C0CFD52C1A}"
-EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = MoveLine.vsmdi
@@ -25,10 +23,6 @@ Global
 		{2006A1CD-4320-4CC8-8FF9-8E97BBFAE05C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2006A1CD-4320-4CC8-8FF9-8E97BBFAE05C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2006A1CD-4320-4CC8-8FF9-8E97BBFAE05C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5F554A4-7615-48AB-A73D-48C0CFD52C1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5F554A4-7615-48AB-A73D-48C0CFD52C1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5F554A4-7615-48AB-A73D-48C0CFD52C1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5F554A4-7615-48AB-A73D-48C0CFD52C1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

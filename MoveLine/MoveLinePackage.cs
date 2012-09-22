@@ -1,17 +1,13 @@
 ﻿using System;
-using System.ComponentModel.Composition;
-using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
-using Microsoft.VisualStudio.Shell.Interop;
+using System.Runtime.InteropServices;
+using KevinAenmey.MoveLine;
+using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Text.Operations;
-using Microsoft.VisualStudio.Utilities;
-using MoveLine;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
-using Microsoft.VisualStudio.Editor;
-using KevinAenmey.MoveLine;
-using System.ComponentModel.Composition.Hosting;
+using Microsoft.VisualStudio.Utilities;
 
 namespace KevinAenmey.MoveLinePackage
 {
@@ -25,25 +21,20 @@ namespace KevinAenmey.MoveLinePackage
         private readonly Lazy<LineMoveDirector> lazyLineMoveUp = new Lazy<LineMoveDirector>(() => new LineMoveDirector(new LineMoverUp()));
         private readonly Lazy<LineMoveDirector> lazyLineMoveDown = new Lazy<LineMoveDirector>(() => new LineMoveDirector(new LineMoverDown()));
 
-        /// <summary>
-        /// Initialization of the package; this method is called right after the package is sited, so this is the place
-        /// where you can put all the initialization code that rely on services provided by VisualStudio.
-        /// </summary>
         protected override void Initialize()
         {
             base.Initialize();
+            var menuCommandService = this.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
 
-            // Add our command handlers for menu (commands must exist in the .vsct file)
-            OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if (null != mcs)
+            if (menuCommandService != null)
             {
-                CommandID upCommandID = new CommandID(GuidList.guidMoveLineCmdSet, (int)PkgCmdIDList.cmdidMoveLineUp);
-                MenuCommand upCommand = new MenuCommand(MoveLineUpCallback, upCommandID);
-                mcs.AddCommand(upCommand);
+                var upCommandId = new CommandID(GuidList.guidMoveLineCmdSet, (int)PkgCmdIDList.cmdidMoveLineUp);
+                var upMenuCommand = new MenuCommand(MoveLineUpCallback, upCommandId);
+                menuCommandService.AddCommand(upMenuCommand);
 
-                CommandID downCommandID = new CommandID(GuidList.guidMoveLineCmdSet, (int)PkgCmdIDList.cmdidMoveLineDown);
-                MenuCommand downCommand = new MenuCommand(MoveLineDownCallback, downCommandID);
-                mcs.AddCommand(downCommand);
+                var downCommandId = new CommandID(GuidList.guidMoveLineCmdSet, (int)PkgCmdIDList.cmdidMoveLineDown);
+                var downMenuCommand = new MenuCommand(MoveLineDownCallback, downCommandId);
+                menuCommandService.AddCommand(downMenuCommand);
             }
         }
 
@@ -51,7 +42,7 @@ namespace KevinAenmey.MoveLinePackage
         {
             if (this.IsActiveDocumentText(sender))
             {
-                this.lazyLineMoveUp.Value.MoveLine(this.GetActiveTextView());
+                this.lazyLineMoveUp.Value.MoveLine(this.GetActiveWpfTextView());
             }
         }
 
@@ -59,31 +50,31 @@ namespace KevinAenmey.MoveLinePackage
         {
             if (this.IsActiveDocumentText(sender))
             {
-                this.lazyLineMoveDown.Value.MoveLine(this.GetActiveTextView());
+                this.lazyLineMoveDown.Value.MoveLine(this.GetActiveWpfTextView());
             }
         }
 
         private bool IsActiveDocumentText(object sender)
         {
-            var app = (EnvDTE.DTE)GetService(typeof(SDTE));
+            var app = (EnvDTE.DTE)this.GetService(typeof(SDTE));
             return app.ActiveDocument != null && app.ActiveDocument.Type == "Text";
         }
 
-        private IWpfTextView GetActiveTextView()
+        private IWpfTextView GetActiveWpfTextView()
         {
             IWpfTextView wpfTextView = null;
 
-            var textManager = (IVsTextManager)GetService(typeof(SVsTextManager));
-            IVsTextView vsTextView = null;
+            var textManager = (IVsTextManager)this.GetService(typeof(SVsTextManager));
+            IVsTextView vsTextView;
             textManager.GetActiveView(fMustHaveFocus: 1, pBuffer: null, ppView: out vsTextView);
             var userData = vsTextView as IVsUserData;
 
             if (userData != null)
             {
-                object holder;
+                object host;
                 var guidViewHost = DefGuidList.guidIWpfTextViewHost;
-                userData.GetData(ref guidViewHost, out holder);
-                var viewHost = (IWpfTextViewHost)holder;
+                userData.GetData(ref guidViewHost, out host);
+                var viewHost = (IWpfTextViewHost)host;
                 wpfTextView = viewHost.TextView;
             }
 

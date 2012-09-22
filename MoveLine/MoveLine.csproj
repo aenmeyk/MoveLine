@@ -122,7 +122,6 @@
     <Compile Include="LineMoverDown.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="LineMoverUp.cs" />
-    <Compile Include="MoveLine.cs" />
     <Compile Include="MoveLinePackage.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>

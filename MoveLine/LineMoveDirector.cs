@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.Text.Editor;
+﻿using Microsoft.VisualStudio.Text.Editor;
 
 namespace KevinAenmey.MoveLine
 {
@@ -12,7 +11,7 @@ namespace KevinAenmey.MoveLine
             this.lineMover = lineMover;
         }
 
-        public bool MoveLine(IWpfTextView view)
+        public void MoveLine(IWpfTextView view)
         {
             try
             {
@@ -26,12 +25,10 @@ namespace KevinAenmey.MoveLine
                 selectionHelper.ApplySelection(offSet);
                 view.Caret.EnsureVisible();
             }
-            catch (Exception e)
+            catch
             {
-                return false;
+                // Not critical so swallow exception.
             }
-
-            return true;
         }
     }
 }

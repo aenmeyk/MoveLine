@@ -4,7 +4,7 @@
     <Name>MoveLine</Name>
     <Author>Kevin Aenmey</Author>
     <Version>1.0</Version>
-    <Description xml:space="preserve">Moves a line up or down in the editor.</Description>
+    <Description xml:space="preserve">Moves a line up or down in the editor using shortcut keys.</Description>
     <Locale>1033</Locale>
     <InstalledByMsi>false</InstalledByMsi>
     <SupportedProducts>
