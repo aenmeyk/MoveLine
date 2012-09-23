@@ -27,7 +27,7 @@ namespace KevinAenmey.MoveLine
             }
             catch
             {
-                // Not critical so swallow exception.
+                // Not critical. Swallow the exception.
             }
         }
     }

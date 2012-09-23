@@ -9,6 +9,8 @@ namespace KevinAenmey.MoveLine
     {
         private readonly IWpfTextView view;
         private SnapshotSpan selection;
+        private bool shouldSelectionBeApplied;
+        private bool isSelectionReversed;
 
         public SelectionHelper(IWpfTextView view)
         {
@@ -18,19 +20,35 @@ namespace KevinAenmey.MoveLine
         public void TakeSelectionSnapshot()
         {
             this.selection = this.view.Selection.SelectedSpans.FirstOrDefault();
+
+            // Only apply the selection if something is selected and the selection ends at the beginning of the line or at the end of the document
+            if (this.selection.Length > 0)
+            {
+                var currentLine = this.view.GetTextViewLineContainingBufferPosition(this.selection.End);
+
+                if(this.selection.End.Position == this.view.TextSnapshot.Length || currentLine.Start.Position == this.selection.End.Position)
+                {
+                    this.shouldSelectionBeApplied = true;
+                    this.isSelectionReversed = this.view.Selection.IsReversed;
+                }
+            }
         }
 
         public void ApplySelection(int offset)
         {
-            if (this.selection.Length > 0)
+            if (this.shouldSelectionBeApplied)
             {
                 var updatedSelectionSnapshot = new SnapshotSpan(this.view.TextSnapshot, this.selection.Start + offset, this.selection.Length);
-                this.view.Selection.Select(updatedSelectionSnapshot, false);
-                this.view.Caret.MoveTo(new SnapshotPoint(this.view.TextSnapshot, updatedSelectionSnapshot.End));
+                this.view.Selection.Select(updatedSelectionSnapshot, this.isSelectionReversed);
+                var caretPosition = this.isSelectionReversed
+                    ? updatedSelectionSnapshot.Start
+                    : updatedSelectionSnapshot.End;
+
+                this.view.Caret.MoveTo(new SnapshotPoint(this.view.TextSnapshot, caretPosition));
             }
         }
 
-        public SnapshotPoint GetLineStart()
+        public SnapshotPoint GetLineStartPoint()
         {
             var startPosition = this.view.Selection.Start.Position;
             var startLine = this.view.GetTextViewLineContainingBufferPosition(startPosition);
@@ -46,7 +64,7 @@ namespace KevinAenmey.MoveLine
                 : new SnapshotPoint(this.view.TextSnapshot, endLine.Start);
         }
 
-        public SnapshotPoint GetLineEnd()
+        public SnapshotPoint GetLineEndPoint()
         {
             var endLine = this.GetEndLine();
             return this.view.Selection.IsEmpty || this.view.Selection.End.Position != endLine.Start

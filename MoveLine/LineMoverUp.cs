@@ -13,7 +13,7 @@ namespace KevinAenmey.MoveLine
 
         public ITextSnapshotLine GetLineToSwap(IWpfTextView view, SelectionHelper selectionHelper)
         {
-            var startPosition = selectionHelper.GetLineStart();
+            var startPosition = selectionHelper.GetLineStartPoint();
             var startLineNumber = view.TextSnapshot.GetLineNumberFromPosition(startPosition.Position);
 
             return view.TextSnapshot.GetLineFromLineNumber(startLineNumber - 1);

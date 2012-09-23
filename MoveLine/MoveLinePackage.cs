@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
+using EnvDTE;
 using KevinAenmey.MoveLine;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Shell;

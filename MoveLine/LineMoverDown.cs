@@ -8,12 +8,12 @@ namespace KevinAenmey.MoveLine
     {
         public SnapshotPoint GetInsertPosition(SelectionHelper selectionHelper)
         {
-            return selectionHelper.GetLineStart();
+            return selectionHelper.GetLineStartPoint();
         }
 
         public ITextSnapshotLine GetLineToSwap(IWpfTextView view, SelectionHelper selectionHelper)
         {
-            var endPosition = selectionHelper.GetLineEnd();
+            var endPosition = selectionHelper.GetLineEndPoint();
             var endLineNumber = view.TextSnapshot.GetLineNumberFromPosition(endPosition.Position);
 
             return view.TextSnapshot.GetLineFromLineNumber(endLineNumber + 1);
